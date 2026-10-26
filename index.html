@@ -203,9 +203,11 @@
   </div>
 
   <div class="livebar">
-    <span class="pill"><span id="dot" class="dot loading"></span><span id="statusText">連接中…</span></span>
+    <button class="pill" type="button" id="statusPill" title="點一下立即更新"><span id="dot" class="dot loading"></span><span id="statusText">連接中…</span></button>
     <span class="sep"></span>
     <span class="pill">每 30 秒更新 · <span class="cd" id="countdown">30</span> 秒後</span>
+    <span class="sep"></span>
+    <button class="pill" type="button" id="refreshBtn" title="立即更新班次"><span class="pin">↻</span>更新</button>
     <span class="sep"></span>
     <button class="pill" id="orderBtn" type="button" title="切換顯示優先次序">
       <span class="pin">📍</span><span id="orderText">定位中…</span>
@@ -439,6 +441,9 @@
     document.getElementById("orderHint").firstChild.nodeValue = "正在取得你的位置… ";
     locate();
   });
+
+  document.getElementById("statusPill").addEventListener("click", function () { refresh(); });
+  document.getElementById("refreshBtn").addEventListener("click", function () { refresh(); });
 
   /* ---------------- ETA rendering ---------------- */
 
