@@ -207,8 +207,6 @@
     <span class="sep"></span>
     <span class="pill">每 30 秒更新 · <span class="cd" id="countdown">30</span> 秒後</span>
     <span class="sep"></span>
-    <button class="pill" type="button" id="refreshBtn" title="立即更新班次"><span class="pin">↻</span>更新</button>
-    <span class="sep"></span>
     <button class="pill" id="orderBtn" type="button" title="切換顯示優先次序">
       <span class="pin">📍</span><span id="orderText">定位中…</span>
     </button>
@@ -443,7 +441,6 @@
   });
 
   document.getElementById("statusPill").addEventListener("click", function () { refresh(); });
-  document.getElementById("refreshBtn").addEventListener("click", function () { refresh(); });
 
   /* ---------------- ETA rendering ---------------- */
 
