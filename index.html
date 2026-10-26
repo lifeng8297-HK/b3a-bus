@@ -70,8 +70,10 @@
     font-weight: 700; letter-spacing: .5px;
     border-radius: 6px; padding: 2px 7px; font-size: 12px;
   }
-  h1 { font-size: 32px; font-weight: 700; letter-spacing: -.6px; line-height: 1.15; }
+  h1 { font-size: clamp(23px, 5vw, 32px); font-weight: 700; letter-spacing: -.6px; line-height: 1.15; }
   .masthead .sub { color: var(--label-2); font-size: 15px; margin-top: 8px; }
+  .masthead h1, .masthead .sub { transition: opacity .22s ease, transform .22s ease; }
+  .masthead .swap { opacity: 0; transform: translateY(6px); }
 
   /* ---------- live status ---------- */
   .livebar {
@@ -196,8 +198,8 @@
 
   <div class="masthead">
     <div class="route-badge"><span class="b3a">B3A</span> 城巴 Citybus</div>
-    <h1>富泰邨 ⇄ 深圳灣口岸</h1>
-    <div class="sub">Fu Tai Estate ⇄ Shenzhen Bay Port · Shan King Estate 山景邨 為總站</div>
+    <h1 id="pageTitle">富泰邨 → 深圳灣口岸</h1>
+    <div class="sub" id="pageSub">Fu Tai Estate → Shenzhen Bay Port · Citybus 城巴 B3A</div>
   </div>
 
   <div class="livebar">
@@ -356,6 +358,31 @@
   /* 手機瀏覽器只允許在 HTTPS / localhost 取得定位；其餘情況改用手動 📍 切換 */
   function canLocate() { return !!(navigator.geolocation && window.isSecureContext); }
 
+  /* 大標題隨優先方向切換（帶淡出淡入） */
+  var mastheadTimer = null;
+  function setMasthead(goingOut) {
+    var h1 = document.getElementById("pageTitle");
+    var sub = document.getElementById("pageSub");
+    if (!h1 || !sub) return;
+
+    var t = goingOut ? "富泰邨 → 深圳灣口岸" : "深圳灣口岸 → 富泰商場";
+    var s = goingOut
+      ? "Fu Tai Estate → Shenzhen Bay Port · Citybus 城巴 B3A"
+      : "Shenzhen Bay Port → Fu Tai Shopping Centre · Citybus 城巴 B3A";
+
+    if (h1.textContent === t && sub.textContent === s) return;
+
+    h1.classList.add("swap");
+    sub.classList.add("swap");
+    clearTimeout(mastheadTimer);
+    mastheadTimer = setTimeout(function () {
+      h1.textContent = t;
+      sub.textContent = s;
+      h1.classList.remove("swap");
+      sub.classList.remove("swap");
+    }, 170);
+  }
+
   function applyOrder(mode, source) {
     order = mode === "in-first" ? "in-first" : "out-first";
     orderSource = source || "manual";
@@ -370,6 +397,7 @@
     }
 
     var goingOut = order === "out-first";
+    setMasthead(goingOut);
     var text = goingOut ? "香港 · 先看前往深圳灣" : "深圳 · 先看前往富泰商場";
     var hint;
     if (orderSource === "geo") {
