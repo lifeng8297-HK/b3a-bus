@@ -6,6 +6,7 @@
 <title>B3A 富泰邨 ⇄ 深圳灣口岸 · Next Buses</title>
 <style>
   :root {
+    color-scheme: light dark;
     --bg: #f5f5f7;
     --card: rgba(255, 255, 255, 0.72);
     --card-solid: #ffffff;
@@ -15,12 +16,13 @@
     --label-3: #aeaeb2;
     --blue: #0071e3;
     --green: #34c759;
+    --green-glow: rgba(52, 199, 89, .55);
     --orange: #ff9500;
     --red: #ff3b30;
     --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.07);
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-mode="light"]) {
       --bg: #000000;
       --card: rgba(28, 28, 30, 0.72);
       --card-solid: #1c1c1e;
@@ -30,11 +32,29 @@
       --label-3: #636366;
       --blue: #0a84ff;
       --green: #30d158;
+      --green-glow: rgba(48, 209, 88, .55);
       --orange: #ff9f0a;
       --red: #ff453a;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.5);
     }
   }
+  :root[data-mode="dark"] {
+    --bg: #000000;
+    --card: rgba(28, 28, 30, 0.72);
+    --card-solid: #1c1c1e;
+    --hairline: rgba(255, 255, 255, 0.12);
+    --label: #f5f5f7;
+    --label-2: #98989d;
+    --label-3: #636366;
+    --blue: #0a84ff;
+    --green: #30d158;
+    --green-glow: rgba(48, 209, 88, .55);
+    --orange: #ff9f0a;
+    --red: #ff453a;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.5);
+  }
+  :root[data-mode="light"] { color-scheme: light; }
+  :root[data-mode="dark"] { color-scheme: dark; }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -115,7 +135,7 @@
   }
   .dot.loading { background: var(--orange); animation: spinDot 1.1s linear infinite; box-shadow: none; }
   .dot.error { background: var(--red); animation: none; box-shadow: none; }
-  @keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(52,199,89,.55);} 70% { box-shadow: 0 0 0 7px rgba(52,199,89,0);} 100% { box-shadow: 0 0 0 0 rgba(52,199,89,0);} }
+  @keyframes glow { 0% { box-shadow: 0 0 0 0 var(--green-glow);} 70% { box-shadow: 0 0 0 7px transparent;} 100% { box-shadow: 0 0 0 0 transparent;} }
   @keyframes spinDot { 0%,100% { opacity: .3 } 50% { opacity: 1 } }
 
   /* ---------- cards ---------- */
@@ -191,9 +211,97 @@
   footer a { color: var(--label-2); text-decoration: none; }
   footer a:hover { text-decoration: underline; }
   .cd { font-variant-numeric: tabular-nums; }
+  .theme-fab {
+    position: fixed; z-index: 40;
+    top: max(14px, env(safe-area-inset-top, 0px)); right: 16px;
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--hairline);
+    background: var(--card); color: var(--label);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: var(--shadow);
+    font-size: 18px; line-height: 1; cursor: pointer;
+    transition: transform .12s ease;
+  }
+  .theme-fab:active { transform: scale(.94); }
+
+  /* ---------- theme sheet ---------- */
+  .sheet-backdrop {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(0, 0, 0, .32);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .sheet-backdrop[hidden] { display: none; }
+  .sheet {
+    width: 100%; max-width: 420px;
+    background: var(--card-solid);
+    border: 1px solid var(--hairline);
+    border-radius: 22px 22px 0 0;
+    padding: 18px 20px calc(22px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, .18);
+    animation: sheetUp .22s ease;
+  }
+  @keyframes sheetUp { from { transform: translateY(18px); opacity: 0 } to { transform: none; opacity: 1 } }
+  @media (min-width: 600px) {
+    .sheet-backdrop { align-items: center; }
+    .sheet { border-radius: 22px; box-shadow: var(--shadow); }
+    @keyframes sheetUp { from { transform: scale(.97); opacity: 0 } to { transform: none; opacity: 1 } }
+  }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .sheet-head strong { font-size: 17px; letter-spacing: -.2px; }
+  .xbtn {
+    border: none; cursor: pointer;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(120, 120, 128, .14); color: var(--label-2);
+    font-size: 13px; line-height: 1;
+  }
+  .seg { display: flex; gap: 3px; padding: 3px; border-radius: 10px; background: rgba(120, 120, 128, .14); }
+  .seg button {
+    flex: 1; border: none; background: transparent; cursor: pointer;
+    font: inherit; font-size: 14px; color: var(--label);
+    padding: 7px 0; border-radius: 8px;
+  }
+  .seg button.on { background: var(--card-solid); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }
+  .sheet-label { font-size: 12.5px; color: var(--label-3); margin: 16px 0 8px; }
+  .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+  .swatch {
+    width: 36px; height: 36px; border-radius: 50%; cursor: pointer; padding: 0;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, var(--a) 0%, var(--a) 36%, var(--b) 64%, var(--b) 100%);
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+  .swatch.on { border-color: var(--label); box-shadow: inset 0 0 0 2px var(--card-solid); }
+  .custom { display: flex; align-items: center; gap: 14px; }
+  .cwrap { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--label-2); }
+  .cwrap input {
+    width: 34px; height: 26px; padding: 0; cursor: pointer;
+    border: 1px solid var(--hairline); border-radius: 7px; background: none;
+  }
+  .custom .linkbtn { margin-left: auto; font-size: 13px; }
 </style>
+<script>
+/* 在首次繪製前套用已儲存的配色，避免閃一下預設色 */
+(function () {
+  try {
+    var t = JSON.parse(localStorage.getItem("b3a.theme") || "null");
+    if (!t) return;
+    var r = document.documentElement;
+    if (t.mode === "light" || t.mode === "dark") r.setAttribute("data-mode", t.mode);
+    if (/^#[0-9a-f]{6}$/i.test(t.out || "")) r.style.setProperty("--blue", t.out);
+    if (/^#[0-9a-f]{6}$/i.test(t.in || "")) {
+      r.style.setProperty("--green", t.in);
+      var n = parseInt(t.in.slice(1), 16);
+      r.style.setProperty("--green-glow",
+        "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + ",.55)");
+    }
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
+<button class="theme-fab" id="themeBtn" type="button" aria-label="自訂配色" title="自訂配色">🎨</button>
 <div class="wrap">
 
   <div class="masthead">
@@ -254,6 +362,31 @@
     (rt.data.gov.hk) · 時間為香港時間 HKT<br>
     B3A 全程：山景邨 ⇄ 深圳灣口岸，經屯門公路、屯門公路轉車站、富泰邨
   </footer>
+</div>
+
+<div class="sheet-backdrop" id="themeSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="themeTitle">
+    <div class="sheet-head">
+      <strong id="themeTitle">外觀與配色</strong>
+      <button class="xbtn" id="themeClose" type="button" aria-label="關閉">✕</button>
+    </div>
+
+    <div class="seg" id="modeSeg" role="group" aria-label="外觀">
+      <button type="button" data-mode="auto">自動</button>
+      <button type="button" data-mode="light">淺色</button>
+      <button type="button" data-mode="dark">深色</button>
+    </div>
+
+    <div class="sheet-label">配色</div>
+    <div class="swatches" id="swatches" role="group" aria-label="配色"></div>
+
+    <div class="sheet-label">自訂顏色</div>
+    <div class="custom">
+      <label class="cwrap">去程 <input type="color" id="cOut" aria-label="去程顏色"></label>
+      <label class="cwrap">回程 <input type="color" id="cIn" aria-label="回程顏色"></label>
+      <button class="linkbtn" id="themeReset" type="button">重設</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -536,8 +669,131 @@
 
   document.addEventListener("visibilitychange", function () { if (!document.hidden) refresh(); });
 
+  /* ---------------- theme ---------------- */
+  var THEME_KEY = "b3a.theme";
+  var PRESETS = [
+    { name: "經典", out: "#0071e3", in: "#34c759" },
+    { name: "海洋", out: "#0a84ff", in: "#30b0c7" },
+    { name: "暖陽", out: "#f08a24", in: "#e35d6a" },
+    { name: "紫霞", out: "#af52de", in: "#ff2d55" },
+    { name: "森林", out: "#2e9e5b", in: "#7cb342" },
+    { name: "石墨", out: "#636366", in: "#8e8e93" }
+  ];
+  var theme = { mode: "auto", out: "", in: "" };
+
+  try {
+    var savedTheme = JSON.parse(localStorage.getItem(THEME_KEY) || "null");
+    if (savedTheme && typeof savedTheme === "object") {
+      if (savedTheme.mode === "light" || savedTheme.mode === "dark") theme.mode = savedTheme.mode;
+      if (/^#[0-9a-f]{6}$/i.test(savedTheme.out || "")) theme.out = savedTheme.out;
+      if (/^#[0-9a-f]{6}$/i.test(savedTheme.in || "")) theme.in = savedTheme.in;
+    }
+  } catch (e) {}
+
+  function hexToRgba(hex, a) {
+    var n = parseInt(hex.slice(1), 16);
+    return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
+  }
+
+  function paintTheme() {
+    var root = document.documentElement;
+    if (theme.mode === "light" || theme.mode === "dark") root.setAttribute("data-mode", theme.mode);
+    else root.removeAttribute("data-mode");
+
+    if (theme.out) root.style.setProperty("--blue", theme.out);
+    else root.style.removeProperty("--blue");
+
+    if (theme.in) {
+      root.style.setProperty("--green", theme.in);
+      root.style.setProperty("--green-glow", hexToRgba(theme.in, .55));
+    } else {
+      root.style.removeProperty("--green");
+      root.style.removeProperty("--green-glow");
+    }
+  }
+
+  function saveTheme() {
+    try { localStorage.setItem(THEME_KEY, JSON.stringify(theme)); } catch (e) {}
+  }
+
+  var sheet = document.getElementById("themeSheet");
+  var modeSeg = document.getElementById("modeSeg");
+  var swatchWrap = document.getElementById("swatches");
+  var cOut = document.getElementById("cOut");
+  var cIn = document.getElementById("cIn");
+
+  function syncThemeUI() {
+    Array.prototype.forEach.call(modeSeg.children, function (b) {
+      b.classList.toggle("on", b.dataset.mode === theme.mode);
+    });
+    var curOut = theme.out || "#0071e3";
+    var curIn = theme.in || "#34c759";
+    cOut.value = curOut;
+    cIn.value = curIn;
+    Array.prototype.forEach.call(swatchWrap.children, function (b) {
+      b.classList.toggle("on", b.dataset.out === curOut && b.dataset.in === curIn);
+    });
+  }
+
+  PRESETS.forEach(function (p) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "swatch";
+    b.title = p.name;
+    b.setAttribute("aria-label", p.name);
+    b.dataset.out = p.out;
+    b.dataset.in = p.in;
+    b.style.setProperty("--a", p.out);
+    b.style.setProperty("--b", p.in);
+    b.addEventListener("click", function () {
+      theme.out = p.out;
+      theme.in = p.in;
+      paintTheme(); saveTheme(); syncThemeUI();
+    });
+    swatchWrap.appendChild(b);
+  });
+
+  modeSeg.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-mode]");
+    if (!b) return;
+    theme.mode = b.dataset.mode;
+    paintTheme(); saveTheme(); syncThemeUI();
+  });
+
+  cOut.addEventListener("input", function () {
+    theme.out = cOut.value; paintTheme(); saveTheme(); syncThemeUI();
+  });
+  cIn.addEventListener("input", function () {
+    theme.in = cIn.value; paintTheme(); saveTheme(); syncThemeUI();
+  });
+
+  document.getElementById("themeReset").addEventListener("click", function () {
+    theme = { mode: "auto", out: "", in: "" };
+    paintTheme(); saveTheme(); syncThemeUI();
+  });
+
+  function openSheet() {
+    syncThemeUI();
+    sheet.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function closeSheet() {
+    sheet.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  document.getElementById("themeBtn").addEventListener("click", openSheet);
+  document.getElementById("themeClose").addEventListener("click", closeSheet);
+  sheet.addEventListener("click", function (e) { if (e.target === sheet) closeSheet(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !sheet.hidden) closeSheet();
+  });
+
+  paintTheme();
+  syncThemeUI();
+
   /* 供除錯／測試使用 */
-  window.__b3a = { decideOrder: decideOrder, applyOrder: applyOrder, locate: locate, bearing: bearing, applyArrows: applyArrows, order: function () { return order; } };
+  window.__b3a = { decideOrder: decideOrder, applyOrder: applyOrder, locate: locate, bearing: bearing, applyArrows: applyArrows, order: function () { return order; }, theme: function () { return theme; } };
 
   refresh();
   locate();
