@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B3A 富泰邨 ⇄ 深圳灣口岸 · Next Buses</title>
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --card: rgba(255, 255, 255, 0.72);
+    --card-solid: #ffffff;
+    --hairline: rgba(0, 0, 0, 0.08);
+    --label: #1d1d1f;
+    --label-2: #6e6e73;
+    --label-3: #aeaeb2;
+    --blue: #0071e3;
+    --green: #34c759;
+    --orange: #ff9500;
+    --red: #ff3b30;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --card: rgba(28, 28, 30, 0.72);
+      --card-solid: #1c1c1e;
+      --hairline: rgba(255, 255, 255, 0.12);
+      --label: #f5f5f7;
+      --label-2: #98989d;
+      --label-3: #636366;
+      --blue: #0a84ff;
+      --green: #30d158;
+      --orange: #ff9f0a;
+      --red: #ff453a;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.5);
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+                 "PingFang HK", "PingFang TC", "Helvetica Neue", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--label);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 40px 20px 56px;
+    display: flex;
+    justify-content: center;
+  }
+  .wrap { width: 100%; max-width: 980px; }
+
+  /* ---------- masthead ---------- */
+  .masthead { text-align: center; margin-bottom: 26px; }
+  .route-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; letter-spacing: .4px;
+    color: var(--label-2);
+    background: var(--card);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 6px 14px 6px 8px;
+    margin-bottom: 14px;
+  }
+  .route-badge .b3a {
+    background: var(--blue); color: #fff;
+    font-weight: 700; letter-spacing: .5px;
+    border-radius: 6px; padding: 2px 7px; font-size: 12px;
+  }
+  h1 { font-size: 32px; font-weight: 700; letter-spacing: -.6px; line-height: 1.15; }
+  .masthead .sub { color: var(--label-2); font-size: 15px; margin-top: 8px; }
+
+  /* ---------- live status ---------- */
+  .livebar {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    flex-wrap: wrap;
+    color: var(--label-2); font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .livebar .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--label-3); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--card);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid var(--hairline);
+    border-radius: 999px; padding: 5px 12px;
+    font: inherit; color: inherit;
+  }
+  button.pill {
+    cursor: pointer;
+    transition: background .2s, transform .12s, border-color .2s;
+  }
+  button.pill:hover { background: var(--card-solid); border-color: var(--label-3); }
+  button.pill:active { transform: scale(.97); }
+  button.pill .pin { color: var(--blue); font-size: 13px; line-height: 1; }
+  .hint {
+    text-align: center; color: var(--label-3);
+    font-size: 12.5px; margin-bottom: 26px;
+  }
+  .linkbtn {
+    background: none; border: none; padding: 0;
+    font: inherit; color: var(--blue); cursor: pointer;
+    text-decoration: underline;
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    animation: glow 2.4s ease-out infinite;
+  }
+  .dot.loading { background: var(--orange); animation: spinDot 1.1s linear infinite; box-shadow: none; }
+  .dot.error { background: var(--red); animation: none; box-shadow: none; }
+  @keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(52,199,89,.55);} 70% { box-shadow: 0 0 0 7px rgba(52,199,89,0);} 100% { box-shadow: 0 0 0 0 rgba(52,199,89,0);} }
+  @keyframes spinDot { 0%,100% { opacity: .3 } 50% { opacity: 1 } }
+
+  /* ---------- cards ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
+
+  .card {
+    background: var(--card);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid var(--hairline);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    order: 0;
+    transition: order .3s;
+  }
+
+  .card-head { padding: 20px 22px 16px; display: flex; align-items: flex-start; gap: 12px; min-height: 96px; }
+  .icon {
+    flex: none; width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+  }
+  .icon.blue { background: var(--blue); }
+  .icon.green { background: var(--green); }
+  .icon svg { width: 18px; height: 18px; transform-origin: 50% 50%; transition: transform .4s ease; }
+  .card-head .titles { min-width: 0; }
+  .card-head h2 { font-size: 17px; font-weight: 600; letter-spacing: -.2px; }
+  .card-head .dest-en { font-size: 13px; color: var(--label-2); margin-top: 2px; }
+  .stop {
+    padding: 0 22px 16px; font-size: 13px; color: var(--label-2); line-height: 1.45;
+  }
+  .stop .stop-name { color: var(--label); font-weight: 500; }
+
+  /* next bus hero */
+  .hero {
+    padding: 6px 22px 18px;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    border-bottom: 1px solid var(--hairline);
+    min-height: 126px;
+  }
+  .hero .big {
+    font-size: 68px; font-weight: 600; letter-spacing: -3px; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--blue);
+  }
+  .hero.green .big { color: var(--green); }
+  .hero .big.now { font-size: 40px; letter-spacing: -1px; }
+  .hero .big-unit { font-size: 17px; font-weight: 500; color: var(--label-2); margin-left: 6px; }
+  .hero > div:first-child { flex: none; white-space: nowrap; }
+  .hero .clock { text-align: right; font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; flex: 1 1 auto; min-width: 0; }
+  .hero .clock small { display: block; font-size: 12px; font-weight: 400; color: var(--label-2); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* following buses */
+  .later { padding: 4px 22px 10px; }
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 0; border-bottom: 1px solid var(--hairline);
+    font-size: 15px;
+    min-height: 47px;
+  }
+  .row:last-child { border-bottom: none; }
+  .row .t { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .row .m { color: var(--label-2); font-variant-numeric: tabular-nums; }
+  .empty { padding: 30px 22px 34px; text-align: center; color: var(--label-2); font-size: 15px; line-height: 1.6; }
+  .empty strong { display: block; color: var(--label); font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+
+  footer {
+    text-align: center; margin-top: 34px;
+    color: var(--label-3); font-size: 12px; line-height: 1.7;
+  }
+  footer a { color: var(--label-2); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .cd { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="route-badge"><span class="b3a">B3A</span> 城巴 Citybus</div>
+    <h1>富泰邨 ⇄ 深圳灣口岸</h1>
+    <div class="sub">Fu Tai Estate ⇄ Shenzhen Bay Port · Shan King Estate 山景邨 為總站</div>
+  </div>
+
+  <div class="livebar">
+    <span class="pill"><span id="dot" class="dot loading"></span><span id="statusText">連接中…</span></span>
+    <span class="sep"></span>
+    <span class="pill">每 30 秒更新 · <span class="cd" id="countdown">30</span> 秒後</span>
+    <span class="sep"></span>
+    <button class="pill" id="orderBtn" type="button" title="切換顯示優先次序">
+      <span class="pin">📍</span><span id="orderText">定位中…</span>
+    </button>
+  </div>
+  <div class="hint" id="orderHint">正在取得你的位置，以決定哪個方向排在前面… <button class="linkbtn" id="geoRetry" type="button" hidden>重新嘗試定位</button></div>
+
+  <div class="grid">
+    <!-- 去程 -->
+    <section class="card" id="card-out">
+      <div class="card-head">
+        <div class="icon blue" id="icon-out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="19" x2="12" y2="6"></line><polyline points="6 12 12 6 18 12"></polyline>
+          </svg>
+        </div>
+        <div class="titles">
+          <h2>前往深圳灣口岸</h2>
+          <div class="dest-en">To Shenzhen Bay Port</div>
+        </div>
+      </div>
+      <div class="stop"><span class="stop-name">富泰邨（青山公路）</span><br>Fu Tai Estate, Castle Peak Road</div>
+      <div class="body" id="body-out"></div>
+    </section>
+
+    <!-- 回程 -->
+    <section class="card" id="card-in">
+      <div class="card-head">
+        <div class="icon green" id="icon-in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="19" x2="12" y2="6"></line><polyline points="6 12 12 6 18 12"></polyline>
+          </svg>
+        </div>
+        <div class="titles">
+          <h2>前往富泰商場（青山公路）</h2>
+          <div class="dest-en">To Fu Tai Shopping Centre, Castle Peak Road</div>
+        </div>
+      </div>
+      <div class="stop"><span class="stop-name">深圳灣口岸</span><br>Shenzhen Bay Port</div>
+      <div class="body" id="body-in"></div>
+    </section>
+  </div>
+
+  <footer>
+    數據來源 Citybus real-time ETA · <a href="https://data.gov.hk/en-data/dataset/ctb-eta-transport-realtime-eta" target="_blank" rel="noopener">DATA.GOV.HK</a>
+    (rt.data.gov.hk) · 時間為香港時間 HKT<br>
+    B3A 全程：山景邨 ⇄ 深圳灣口岸，經屯門公路、屯門公路轉車站、富泰邨
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var BASE = "https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/";
+  var REFRESH_MS = 30000;
+  var TICK_MS = 1000;
+  var MAX_ROWS = 6;   /* API 每站最多回傳 3 個 ETA，這裡顯示全部已發布的班次 */
+
+  /* 參考座標：深圳灣口岸（香港側口岸建築）與富泰邨 */
+  var PORT = { lat: 22.50166, lng: 113.94519 };
+  var FUTAI = { lat: 22.41249, lng: 113.98238 };
+  var BORDER_LAT = 22.50;   /* 緯度高於此，視作深圳一側 */
+
+  var STOPS = [
+    { key: "out", dir: "O", stop: "003261", bodyId: "body-out", cardId: "card-out", iconId: "icon-out",
+      destEn: "Shenzhen Bay Port", destTc: "深圳灣口岸",
+      fromLabel: "富泰邨（青山公路）",
+      from: { lat: 22.412949232091, lng: 113.98217048053 },   /* 富泰邨（青山公路）*/
+      to:   { lat: 22.501662252091, lng: 113.94518812053 } }, /* 深圳灣口岸 */
+    { key: "in", dir: "I", stop: "003262", bodyId: "body-in", cardId: "card-in", iconId: "icon-in",
+      destEn: "Fu Tai Shopping Centre", destTc: "富泰商場（青山公路）",
+      fromLabel: "深圳灣口岸",
+      from: { lat: 22.501662252091, lng: 113.94518812053 },   /* 深圳灣口岸 */
+      to:   { lat: 22.412485842091, lng: 113.98237946053 } }  /* 富泰商場（青山公路）*/
+  ];
+
+  var state = {};
+  STOPS.forEach(function (s) { state[s.key] = { etas: [], error: 0 }; });
+
+  var nextRefreshAt = Date.now();
+  var pending = false;
+  var order = "out-first";      // "out-first" | "in-first"
+  var orderSource = "default";  // "geo" | "manual" | "default"
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+  function hktClock(d) {
+    var hkt = new Date(d.getTime() + d.getTimezoneOffset() * 60000 + 8 * 3600000);
+    return pad(hkt.getHours()) + ":" + pad(hkt.getMinutes());
+  }
+
+  function minutesUntil(d) { return Math.round((d.getTime() - Date.now()) / 60000); }
+
+  function upcoming(list) {
+    return list.filter(function (e) { return e.time.getTime() > Date.now() - 30000; })
+               .sort(function (a, b) { return a.time - b.time; })
+               .slice(0, MAX_ROWS);
+  }
+
+  /* ---------------- display order (location based) ---------------- */
+
+  function haversineKm(lat1, lng1, lat2, lng2) {
+    var R = 6371, toRad = Math.PI / 180;
+    var dLat = (lat2 - lat1) * toRad, dLng = (lng2 - lng1) * toRad;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+
+  /* 由出發點指向目的地的方位角（0° = 正北，順時針） */
+  function bearing(from, to) {
+    var toRad = Math.PI / 180, toDeg = 180 / Math.PI;
+    var f1 = from.lat * toRad, f2 = to.lat * toRad;
+    var dLng = (to.lng - from.lng) * toRad;
+    var y = Math.sin(dLng) * Math.cos(f2);
+    var x = Math.cos(f1) * Math.sin(f2) - Math.sin(f1) * Math.cos(f2) * Math.cos(dLng);
+    return (Math.atan2(y, x) * toDeg + 360) % 360;
+  }
+
+  /* 標題箭頭隨出發點變化：取方位角所在象限，固定以 45° 斜向顯示（左上／右上／右下／左下） */
+  function diag45(deg) {
+    var d = ((deg % 360) + 360) % 360;
+    if (d >= 270) return 315;   // 西北 → 左上
+    if (d >= 180) return 225;   // 西南 → 左下
+    if (d >= 90) return 135;    // 東南 → 右下
+    return 45;                  // 東北 → 右上
+  }
+
+  function applyArrows() {
+    STOPS.forEach(function (s) {
+      var icon = document.getElementById(s.iconId);
+      if (!icon) return;
+      var svg = icon.querySelector("svg");
+      var deg = bearing(s.from, s.to);
+      var shown = diag45(deg);
+      if (svg) svg.style.transform = "rotate(" + shown + "deg)";
+      icon.title = s.fromLabel + " → " + s.destTc + "（方位 " + deg.toFixed(0) + "°）";
+    });
+  }
+
+  /* 在香港（富泰一側）→ 去程優先；在深圳一側（或靠近口岸）→ 回程優先 */
+  function decideOrder(lat, lng) {
+    var dPort = haversineKm(lat, lng, PORT.lat, PORT.lng);
+    var dFuTai = haversineKm(lat, lng, FUTAI.lat, FUTAI.lng);
+    return (lat > BORDER_LAT || dPort < dFuTai) ? "in-first" : "out-first";
+  }
+
+  /* 手機瀏覽器只允許在 HTTPS / localhost 取得定位；其餘情況改用手動 📍 切換 */
+  function canLocate() { return !!(navigator.geolocation && window.isSecureContext); }
+
+  function applyOrder(mode, source) {
+    order = mode === "in-first" ? "in-first" : "out-first";
+    orderSource = source || "manual";
+
+    var outCard = document.getElementById("card-out");
+    var inCard = document.getElementById("card-in");
+    outCard.style.order = order === "out-first" ? "0" : "1";
+    inCard.style.order = order === "out-first" ? "1" : "0";
+
+    if (orderSource === "manual" || orderSource === "geo") {
+      try { localStorage.setItem("b3a.order", order); } catch (e) {}
+    }
+
+    var goingOut = order === "out-first";
+    var text = goingOut ? "香港 · 先看前往深圳灣" : "深圳 · 先看前往富泰商場";
+    var hint;
+    if (orderSource === "geo") {
+      hint = goingOut
+        ? "已按你的位置排序：你在香港（深圳灣口岸以南），前往深圳灣口岸的班次排在前面。"
+        : "已按你的位置排序：你在深圳（或非常接近口岸），前往富泰商場的班次排在前面。";
+    } else if (orderSource === "saved") {
+      hint = "已套用你上次選擇的排序（點 📍 可切換）。";
+    } else if (!canLocate()) {
+      hint = "此頁面以 HTTP 開啟，瀏覽器不提供定位服務；點 📍 手動切換方向，選擇會被記住。";
+    } else if (orderSource === "default") {
+      hint = "未能取得定位，使用預設排序：前往深圳灣口岸在前。點 📍 可手動切換，或重新嘗試定位。";
+    } else {
+      hint = "手動排序：" + (goingOut ? "前往深圳灣口岸" : "前往富泰商場（青山公路）") +
+             "的班次排在前面，已記住你的選擇。點 📍 可再切換。";
+    }
+
+    document.getElementById("orderText").textContent = text;
+    document.getElementById("orderHint").firstChild.nodeValue = hint + " ";
+    document.getElementById("geoRetry").hidden = !(orderSource === "default" && canLocate());
+  }
+
+  function locate() {
+    if (!canLocate()) { applyOrder(order, "default"); return; }
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        applyOrder(decideOrder(pos.coords.latitude, pos.coords.longitude), "geo");
+      },
+      function () { applyOrder(order, "default"); },
+      { timeout: 10000, maximumAge: 300000 }
+    );
+  }
+
+  document.getElementById("orderBtn").addEventListener("click", function () {
+    applyOrder(order === "out-first" ? "in-first" : "out-first", "manual");
+  });
+
+  document.getElementById("geoRetry").addEventListener("click", function () {
+    document.getElementById("orderHint").firstChild.nodeValue = "正在取得你的位置… ";
+    locate();
+  });
+
+  /* ---------------- ETA rendering ---------------- */
+
+  function renderCard(s) {
+    var el = document.getElementById(s.bodyId);
+    var st = state[s.key];
+    var rows = upcoming(st.etas);
+
+    if (!rows.length) {
+      el.innerHTML =
+        '<div class="empty"><strong>' +
+        (st.error ? "未能連接即時數據" : "暫時沒有班次") + "</strong>" +
+        (st.error ? "Automatic retry in progress…<br>正自動重試…" :
+          "營辦商暫時沒有提供到站時間。<br>No upcoming arrival times published.") +
+        "</div>";
+      return;
+    }
+
+    var first = rows[0];
+    var m = minutesUntil(first.time);
+    var hero =
+      '<div class="hero' + (s.key === "in" ? " green" : "") + '">' +
+        '<div><span class="big' + (m <= 0 ? " now" : "") + '">' + (m <= 0 ? "即將到達" : m) + '</span>' +
+          (m <= 0 ? "" : '<span class="big-unit">分鐘後</span>') +
+        "</div>" +
+        '<div class="clock">' + hktClock(first.time) +
+          "<small>" + s.destTc + "</small></div>" +
+      "</div>";
+
+    var later = "";
+    if (rows.length > 1) {
+      later = '<div class="later">';
+      rows.slice(1).forEach(function (e) {
+        var mm = minutesUntil(e.time);
+        later +=
+          '<div class="row"><span class="t">' + hktClock(e.time) + "</span>" +
+          '<span class="m">' + (mm <= 0 ? "即將到達" : mm + " 分鐘") + "</span></div>";
+      });
+      later += "</div>";
+    }
+
+    el.innerHTML = hero + later;
+  }
+
+  function renderAll() { STOPS.forEach(renderCard); }
+
+  function fetchOne(s) {
+    return fetch(BASE + s.stop + "/B3A", { cache: "no-store" })
+      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+      .then(function (json) {
+        var seen = {};
+        state[s.key].etas = ((json && json.data) || [])
+          .filter(function (r) {
+            if (!r.eta || String(r.stop) !== s.stop || r.dir !== s.dir) return false;
+            if (seen[r.eta]) return false;
+            seen[r.eta] = true;
+            return true;
+          })
+          .map(function (r) { return { time: new Date(r.eta) }; });
+        state[s.key].error = 0;
+      })
+      .catch(function () { state[s.key].error++; });
+  }
+
+  function setStatus(kind, text) {
+    var dot = document.getElementById("dot");
+    dot.className = "dot" + (kind ? " " + kind : "");
+    document.getElementById("statusText").textContent = text;
+  }
+
+  function refresh() {
+    if (pending) return Promise.resolve();
+    pending = true;
+    setStatus("loading", "更新中…");
+
+    return Promise.all(STOPS.map(fetchOne))
+      .then(function () {
+        var errs = STOPS.filter(function (s) { return state[s.key].error > 0; });
+        if (errs.length === STOPS.length) setStatus("error", "連線失敗 · 正在重試");
+        else if (errs.length) setStatus("error", "部分數據失敗 · 正在重試");
+        else setStatus("", "即時數據 " + hktClock(new Date()) + " HKT");
+        renderAll();
+      })
+      .then(function () { pending = false; nextRefreshAt = Date.now() + REFRESH_MS; });
+  }
+
+  setInterval(function () {
+    var left = Math.max(0, Math.ceil((nextRefreshAt - Date.now()) / 1000));
+    document.getElementById("countdown").textContent = left;
+    if (Date.now() >= nextRefreshAt) refresh();
+    renderAll();
+  }, TICK_MS);
+
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) refresh(); });
+
+  /* 供除錯／測試使用 */
+  window.__b3a = { decideOrder: decideOrder, applyOrder: applyOrder, locate: locate, bearing: bearing, applyArrows: applyArrows, order: function () { return order; } };
+
+  refresh();
+  locate();
+  applyArrows();
+})();
+</script>
+</body>
+</html>
